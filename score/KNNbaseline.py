@@ -8,11 +8,12 @@ import random
 
 class KNNbase_Unlearning():
 
-    def __init__(self):
+    def __init__(self, shuffle=False):
         self.user_total_num = 943
         self.RMSE, self.MAE = [], []
         self.reader, self.data, self.data_df, self.item_df, self.item_dict = None, None, None, None, None
         self.user_based_sim_option, self.item_based_sim_option = None, None
+        self.shuffle = shuffle
 
     def data_readin(self, path_to_udata):
         # 协同过滤方法
@@ -24,6 +25,10 @@ class KNNbase_Unlearning():
         # 加载数据集
         self.data = Dataset.load_from_file(file_path, reader=self.reader)
         self.data_df = pd.read_csv(file_path, sep='\t', header=None, names=['user', 'item', 'rating', 'timestamp'])
+        # sorted data dataframe as user id and timestamp
+        if not self.shuffle: # self.shuffle == False
+            self.data_df = self.data_df.sort_values(by=["user", "timestamp"], ascending=[True, True])
+
         self.item_df = pd.read_csv(os.path.expanduser('~/.surprise_data/ml-100k/ml-100k/u.item'),
                                    sep='|', encoding='ISO-8859-1', header=None,
                                    names=['mid', 'mtitle'] + [x for x in range(22)])
@@ -54,8 +59,7 @@ class KNNbase_Unlearning():
     def getting_user_history(self, uid):
         uid = uid if isinstance(uid, str) else str(uid)
 
-        self.data_df_sorted = self.data_df.sort_values(by=["user", "timestamp"], ascending=[True, True])
-        data_user = self.data_df_sorted.loc[self.data_df["user"] == uid]
+        data_user = self.data_df.loc[self.data_df["user"] == uid]
 
         for idx, row in data_user.iterrows():
             row["item"] = self.item_to_movie_name(row["item"])
