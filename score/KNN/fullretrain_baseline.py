@@ -8,7 +8,8 @@ from KnnPred import knnpred
 if __name__ == "__main__":
 
     KNN_Unl = KNNbase_Unlearning(shuffle=False)
-    KNN_Unl.data_readin('~/.surprise_data/ml-100k/ml-100k/u.data')
+    # KNN_Unl.data_readin('~/.surprise_data/ml-100k/ml-100k/u.data')
+    KNN_Unl.data_readin('../../data/train_data_ordered.csv')
     # algorithm = KNN_Unl.train_model()
     # dump.dump("../model/fulltrained_model.m", algo=algorithm)
     # KNN_Unl.get_similar_users_recommendations(algorithm, '7', 10)
@@ -40,7 +41,7 @@ if __name__ == "__main__":
 
     res = {'accuracy': accuracys}
     res_data = pd.DataFrame(res)
-    res_data.to_csv('../results/fullretrain_res.cvs')
+    res_data.to_csv('../results/fullretrain_res.csv')
 
 '''
 
