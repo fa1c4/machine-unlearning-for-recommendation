@@ -7,8 +7,8 @@ from KnnPred import knnpred
 
 if __name__ == "__main__":
 
-    shards = 10
-    shuffle = False
+    shards = 5
+    shuffle = True
     shuflled_ordered_str = 'shuffled' if shuffle else 'ordered'
 
     for s in range(shards):

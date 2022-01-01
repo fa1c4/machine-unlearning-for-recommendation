@@ -1,35 +1,19 @@
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
-from Kbatch_KNNunlearning import KNNbase_Unlearning
+from bagging_KNNunlearning import KNNbase_Unlearning
 from surprise import dump
 from KnnPred import knnpred
 
-if __name__ == "__main__":
 
-    shards = 5
-    shuffle = False
-    shuflled_ordered_str = 'shuffled' if shuffle else 'ordered'
-
-    for s in range(shards):
-        KNN_Unl = KNNbase_Unlearning(shuffle=False, shards=shards)
-        KNN_Unl.data_readin('../../data/shards_{}_{}/dataset_sharded{}.csv'.format(shards, shuflled_ordered_str, s))
-        algorithm = KNN_Unl.train_model()
-        dump.dump("../../model/shards_{}_{}/sharded_trained_model{}.m".format(shards, shuflled_ordered_str, s), algo=algorithm)
-        KNN_Unl.data_df.to_csv("../../data/shards_{}_{}/sharded{}-unlearning0.csv".format(shards, shuflled_ordered_str, s),
-                               sep="\t", header=None, index=False)
-
-    models = [_ for _ in range(shards)]
-    for s in range(shards):
-        _, models[s] = dump.load("../../model/shards_{}_{}/sharded_trained_model{}.m".format(shards, shuflled_ordered_str, s))
-
-    Pred = knnpred(algo=models[0], shuffle=shuffle)
+def bagging(models, shuffle, shards):
+    Pred = knnpred(algo=models[0].alg, shuffle=shuffle)
     testlist = Pred.get_testlist()
     preds = [_ for _ in range(shards)]
     for s in range(shards):
-        Pred = knnpred(algo=models[s], shuffle=shuffle)  # transmit into class knnpred and output accuracy
+        Pred = knnpred(algo=models[s].alg, shuffle=shuffle)  # transmit into class knnpred and output accuracy
         acc, preds[s] = Pred.calculate_accuracy()
-        print('accuracy of shard{} shuffled: {}'.format(s, acc))
+        # print('accuracy of shard{} shuffled: {}'.format(s, acc))
 
     bagginglist = []
     for i in range(len(testlist)):
@@ -44,7 +28,55 @@ if __name__ == "__main__":
         if bagginglist[i] == testlist[i]:
             hits += 1
     acc = hits / len(testlist)
-    print('bagging model accuracy: {}'.format(acc))
+    # print('bagging model accuracy: {}'.format(acc))
+    return acc
+
+
+if __name__ == "__main__":
+
+    shards = 5
+    shuffle = True
+    shuffled_ordered_str = 'shuffled' if shuffle else 'ordered'
+    batchsize = 50
+    sharding_batchsize = batchsize // shards
+    total_unlearning_num = 30
+    acc_num = batchsize * total_unlearning_num
+
+    # sharding unlearning implementation
+    models = []
+    for s in range(shards):
+        models.append(KNNbase_Unlearning(shuffle=shuffle, shards=shards, sharding_idx=s))
+        models[s].data_readin('../../data/shards_{}_{}/dataset_sharded{}.csv'.format(shards, shuffled_ordered_str, s))
+        models[s].data_df.to_csv("../../data/shards_{}_{}/shard{}-unlearning0.csv".format(shards, shuffled_ordered_str, s),
+                               sep="\t", header=None, index=False)
+
+    accuracys, next_indexs = [], []
+    time_start = time.time()
+    for s in range(shards):
+        next_indexs.append(models[s].recommendation_unlearning(0, sharding_batchsize))
+
+    for i in range(total_unlearning_num):
+        print("---- trainning rounds {} ----".format(i))
+        print('----- time elapsed {} s -----'.format(time.time() - time_start))
+        for s in range(shards):
+            next_indexs[s] = models[s].recommendation_unlearning(next_indexs[s], sharding_batchsize)
+        acc_temp = bagging(models, shuffle, shards)
+        accuracys.append(acc_temp)
+        print('shards {}\'s accuracy: {}'.format(shards, acc_temp))
+
+    x = range(0, acc_num, batchsize)
+    plt.plot(x, accuracys, label='acc', linewidth=1, color='b', marker='o')
+    plt.xlabel('unlearning data points')
+    plt.ylabel('accuracy')
+    plt.title('accuracy of shards {} unlearning'.format(shards))
+    plt.legend()
+    plt.show()
+
+    res = {'accuracy': accuracys}
+    res_data = pd.DataFrame(res)
+    res_data.to_csv('../../results/shards{}_unlearning_res.csv'.format(shards))
+
+
 
 '''
     batchsize = 500
@@ -75,7 +107,6 @@ if __name__ == "__main__":
 
 
 '''
-
     res = {'RMSE': KNN_Unl.RMSE, 'MAE': KNN_Unl.MAE}
     res_data = pd.DataFrame(res)
     res_data.to_csv('../results/RMSE_MAE_res.cvs')
@@ -89,5 +120,20 @@ if __name__ == "__main__":
     plt.title('RMSE and MAE\nfor machine unlearning')
     plt.legend()
     plt.show()
+'''
 
+'''
+    for s in range(shards):
+        KNN_Unl = KNNbase_Unlearning(shuffle=shuffle, shards=shards)
+        KNN_Unl.data_readin('../../data/shards_{}_{}/dataset_sharded{}.csv'.format(shards, shuffled_ordered_str, s))
+        algorithm = KNN_Unl.train_model()
+        dump.dump("../../model/shards_{}_{}/sharded_trained_model{}.m".format(shards, shuffled_ordered_str, s), algo=algorithm)
+        KNN_Unl.data_df.to_csv("../../data/shards_{}_{}/sharded{}-unlearning0.csv".format(shards, shuffled_ordered_str, s),
+                               sep="\t", header=None, index=False)
+
+    models = [_ for _ in range(shards)]
+    for s in range(shards):
+        _, models[s] = dump.load("../../model/shards_{}_{}/sharded_trained_model{}.m".format(shards, shuffled_ordered_str, s))
+
+    acc0 = bagging(models, shuffle, shards)
 '''

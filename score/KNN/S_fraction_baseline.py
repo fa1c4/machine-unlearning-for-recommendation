@@ -9,14 +9,14 @@ from KnnPred import knnpred
 
 if __name__ == "__main__":
 
-    shards = 15
-    shuffle = False
+    shards = 5
+    shuffle = True
     shuffled_ordered_str = 'shuffled' if shuffle else 'ordered'
     batchsize = 50
-    total_unlearning_num = 10
+    total_unlearning_num = 30
     acc_num = batchsize * total_unlearning_num
 
-    KNN_Unl = KNNbase_Unlearning(shuffle=False, shards=shards)
+    KNN_Unl = KNNbase_Unlearning(shuffle=shuffle, shards=shards)
     KNN_Unl.data_readin('../../data/shards_{}_{}/dataset_sharded0.csv'.format(shards, shuffled_ordered_str))
     KNN_Unl.data_df.to_csv("../../data/shards_{}_{}/u-unlearning0.csv".format(shards, shuffled_ordered_str),
                            sep="\t", header=None, index=False)

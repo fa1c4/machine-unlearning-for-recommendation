@@ -1,35 +1,36 @@
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
-from KNNbaseline import KNNbase_Unlearning
+from Kbatch_KNNunlearning import KNNbase_Unlearning
+# from KNNbaseline import KNNbase_Unlearning
 from surprise import dump
 from KnnPred import knnpred
 
 if __name__ == "__main__":
+    shards = 5
+    shuffle = True
+    shuffled_ordered_str = 'shuffled' if shuffle else 'ordered'
+    batchsize = 50
+    sharding_batchsize = batchsize // shards
+    total_unlearning_num = 30
+    acc_num = batchsize * total_unlearning_num
 
-    KNN_Unl = KNNbase_Unlearning(shuffle=False)
-    # KNN_Unl.data_readin('~/.surprise_data/ml-100k/ml-100k/u.data')
-    KNN_Unl.data_readin('../../data/train_data_ordered.csv')
-    # algorithm = KNN_Unl.train_model()
-    # dump.dump("../model/fulltrained_model.m", algo=algorithm)
-    # KNN_Unl.get_similar_users_recommendations(algorithm, '7', 10)
+    KNN_Unl = KNNbase_Unlearning(shuffle=shuffle)
+    KNN_Unl.data_readin('../../data/train_data_{}.csv'.format(shuffled_ordered_str))
     KNN_Unl.data_df.to_csv("../../data/u-unlearning0.csv", sep="\t", header=None, index=False)
 
     accuracys = []
     time_start = time.time()
-    next_index = KNN_Unl.recommendation_unlearning(0, True)
-    for i in range(500):
-        validate_flag = False
-        if i % 10 == 9:
-            validate_flag = True
+    next_index = KNN_Unl.recommendation_unlearning(0, batchsize)
+    for i in range(total_unlearning_num):
         print("---- trainning rounds {} ----".format(i))
         print('----- time elapsed {} s -----'.format(time.time() - time_start))
-        next_index = KNN_Unl.recommendation_unlearning(next_index, validate_flag)
-        if i % 50 == 49:
-            Pred = knnpred(KNN_Unl.alg) # transmit into class knnpred and output accuracy
-            accuracys.append(Pred.calculate_accuracy())
+        next_index = KNN_Unl.recommendation_unlearning(next_index, batchsize)
+        Pred = knnpred(KNN_Unl.alg) # transmit into class knnpred and output accuracy
+        acc_temp, _ = Pred.calculate_accuracy()
+        accuracys.append(acc_temp)
 
-    x = range(0, 500, 50)
+    x = range(0, acc_num, batchsize)
     plt.plot(x, accuracys, label='acc', linewidth=1, color='r', marker='o')
     # markerfacecolor='blue',markersize=12)
     # plt.plot(x, KNN_Unl.MAE, label='MAE', linewidth=1, color='b', marker='*')
