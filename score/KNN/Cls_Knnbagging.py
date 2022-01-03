@@ -26,11 +26,12 @@ class Knnbagging():
             acc, preds[s] = Pred.calculate_accuracy()
             # print('accuracy of shard{} shuffled: {}'.format(s, acc))
         bagginglist = []
+        half_cnt = self.shards // 2
         for i in range(len(testlist)):
             cnt = 0 # static 1s number
-            for j in range(5):
+            for j in range(self.shards):
                 if preds[j][i] == 1: cnt += 1
-            if cnt >= 3: bagginglist.append(1)
+            if cnt >= half_cnt: bagginglist.append(1)
             else: bagginglist.append(0)
 
         hits = 0
