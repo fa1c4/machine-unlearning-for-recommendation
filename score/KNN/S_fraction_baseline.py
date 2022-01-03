@@ -13,7 +13,7 @@ if __name__ == "__main__":
     shuffle = True
     shuffled_ordered_str = 'shuffled' if shuffle else 'ordered'
     batchsize = 50
-    total_unlearning_num = 30
+    total_unlearning_num = 5
     acc_num = batchsize * total_unlearning_num
 
     KNN_Unl = KNNbase_Unlearning(shuffle=shuffle, shards=shards)

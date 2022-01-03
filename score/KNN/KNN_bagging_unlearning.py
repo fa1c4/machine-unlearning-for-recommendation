@@ -39,7 +39,7 @@ if __name__ == "__main__":
     shuffled_ordered_str = 'shuffled' if shuffle else 'ordered'
     batchsize = 50
     sharding_batchsize = batchsize // shards
-    total_unlearning_num = 30
+    total_unlearning_num = 5
     acc_num = batchsize * total_unlearning_num
 
     # sharding unlearning implementation

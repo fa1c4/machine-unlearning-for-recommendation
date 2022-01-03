@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     res = {'accuracy': accuracys}
     res_data = pd.DataFrame(res)
-    res_data.to_csv('../results/fullretrain_res.csv')
+    res_data.to_csv('../../results/fullretrain_res.csv')
 
 '''
 
