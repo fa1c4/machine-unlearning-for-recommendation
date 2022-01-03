@@ -8,7 +8,7 @@ import random
 
 class KNNbase_Unlearning():
 
-    def __init__(self, shuffle=False, shards=1, sharding_idx=0):
+    def __init__(self, shuffle=False, shards=1, sharding_idx=0, remove_files_flag=True):
         # self.user_total_num = 943
         if shards <= 0:
             print('shards number is invalid!')
@@ -19,6 +19,7 @@ class KNNbase_Unlearning():
         self.user_based_sim_option, self.item_based_sim_option, self.data_df_droped = None, None, None
         self.alg, self.user_ids, self.algo = None, None, None
         self.shuffle, self.shards, self.sharding_idx = shuffle, shards, sharding_idx
+        self.remove_files_flag, self.original_flag = remove_files_flag, True
 
     def data_readin(self, path_to_udata):
         file_path = os.path.expanduser(path_to_udata)
@@ -28,6 +29,11 @@ class KNNbase_Unlearning():
         # 加载数据集
         self.data = Dataset.load_from_file(file_path, reader=self.reader)
         self.data_df = pd.read_csv(file_path, sep='\t', header=None, names=['user', 'item', 'rating', 'timestamp'])
+
+        if self.remove_files_flag and self.original_flag == False:
+            os.remove(file_path)
+        self.original_flag = False
+
         # sorted data dataframe as user id and timestamp
         if not self.shuffle: # self.shuffle == False
             self.data_df = self.data_df.sort_values(by=["user", "timestamp"], ascending=[True, True])
