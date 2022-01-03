@@ -3,6 +3,7 @@ import time
 import matplotlib.pyplot as plt
 from bagging_KNNunlearning import KNNbase_Unlearning
 from KnnPred import knnpred
+import random
 
 
 class Knnbagging():
@@ -41,6 +42,7 @@ class Knnbagging():
         return acc
 
     # sharding unlearning implementation
+    # batch unlearning in one shard to save more time
     def unlearning(self):
         models = []
         for s in range(self.shards):
@@ -53,24 +55,55 @@ class Knnbagging():
         for s in range(self.shards):
             next_indexs.append(models[s].recommendation_unlearning(0, self.sharding_batchsize))
 
+        bagging_time = 0.0
         for i in range(self.total_unlearning_num):
             print("---- trainning rounds {} ----".format(i))
-            elpased_time = time.time() - time_start
+            elpased_time = time.time() - time_start - bagging_time
             unlearning_times.append(elpased_time)
             print('----- time elapsed {} s -----'.format(elpased_time))
-            for s in range(self.shards):
-                next_indexs[s] = models[s].recommendation_unlearning(next_indexs[s], self.sharding_batchsize)
+            batch_flag = random.randint(0, self.shards - 1)
+            next_indexs[batch_flag] = models[batch_flag].recommendation_unlearning(next_indexs[batch_flag], self.batchsize)
+            bagging_start = time.time()
             acc_temp = self.bagging(models)
             accuracys.append(acc_temp)
             print('shards {}\'s accuracy: {}'.format(self.shards, acc_temp))
+            bagging_time += time.time() - bagging_start
 
         res = {'accuracys': accuracys, 'unlearning time': unlearning_times}
         res_data = pd.DataFrame(res)
         res_data.to_csv('../../results/shards{}_unlearning_res.csv'.format(self.shards))
 
+    # # sharding unlearning implementation
+    # def unlearning(self):
+    #     models = []
+    #     for s in range(self.shards):
+    #         models.append(KNNbase_Unlearning(shuffle=self.shuffle, shards=self.shards, sharding_idx=s))
+    #         models[s].data_readin('../../data/shards_{}_{}/dataset_sharded{}.csv'.format(self.shards, self.shuffled_ordered_str, s))
+    #         models[s].data_df.to_csv("../../data/shards_{}_{}/shard{}-unlearning0.csv".format(self.shards, self.shuffled_ordered_str, s),
+    #                                sep="\t", header=None, index=False)
+    #     accuracys, unlearning_times, next_indexs = [], [], []
+    #     time_start = time.time()
+    #     for s in range(self.shards):
+    #         next_indexs.append(models[s].recommendation_unlearning(0, self.sharding_batchsize))
+    #
+    #     for i in range(self.total_unlearning_num):
+    #         print("---- trainning rounds {} ----".format(i))
+    #         elpased_time = time.time() - time_start
+    #         unlearning_times.append(elpased_time)
+    #         print('----- time elapsed {} s -----'.format(elpased_time))
+    #         for s in range(self.shards):
+    #             next_indexs[s] = models[s].recommendation_unlearning(next_indexs[s], self.sharding_batchsize)
+    #         acc_temp = self.bagging(models)
+    #         accuracys.append(acc_temp)
+    #         print('shards {}\'s accuracy: {}'.format(self.shards, acc_temp))
+    #
+    #     res = {'accuracys': accuracys, 'unlearning time': unlearning_times}
+    #     res_data = pd.DataFrame(res)
+    #     res_data.to_csv('../../results/shards{}_unlearning_res.csv'.format(self.shards))
+
 
 if __name__ == '__main__':
-    test_knnbagging = Knnbagging(5, True, 50, 5)
+    test_knnbagging = Knnbagging(10, True, 50, 5)
     test_knnbagging.unlearning()
     res = pd.read_csv('../../results/shards{}_unlearning_res.csv'.format(test_knnbagging.shards))
     accuracys = res['accuracys']

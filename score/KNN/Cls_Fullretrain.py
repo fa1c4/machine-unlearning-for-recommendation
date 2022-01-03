@@ -7,8 +7,7 @@ from KnnPred import knnpred
 
 class Fullretrain():
 
-    def __init__(self, shards, shuffle, batchsize, total_unlearning_num):
-        self.shards = shards
+    def __init__(self, shuffle, batchsize, total_unlearning_num):
         self.shuffle = shuffle
         self.shuffled_ordered_str = 'shuffled' if shuffle else 'ordered'
         self.batchsize = batchsize
@@ -40,7 +39,7 @@ class Fullretrain():
 
 
 if __name__ == '__main__':
-    test_cls_fullretrain = Fullretrain(5, True, 50, 10)
+    test_cls_fullretrain = Fullretrain(True, 50, 10)
     test_cls_fullretrain.unlearning()
     res = pd.read_csv('../../results/fullretrain_res.csv')
     accuracys = res['accuracys']

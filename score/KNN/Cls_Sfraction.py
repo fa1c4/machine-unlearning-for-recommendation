@@ -29,7 +29,9 @@ class S_fraction():
             elapsed_time = time.time() - time_start
             unlearning_times.append(elapsed_time)
             print('----- time elapsed {} s -----'.format(elapsed_time))
+            # test_time = time.time()
             next_index = KNN_Unl.recommendation_unlearning(next_index, self.batchsize)
+            # print('unlearning step time: {}'.format(time.time() - test_time))
             Pred = knnpred(KNN_Unl.alg)  # transmit into class knnpred and output accuracy
             acc_temp, _ = Pred.calculate_accuracy()
             accuracys.append(acc_temp)
@@ -37,13 +39,13 @@ class S_fraction():
 
         res = {'accuracys': accuracys, 'unlearning time': unlearning_times}
         res_data = pd.DataFrame(res)
-        res_data.to_csv('../../results/S_fraction_retrain_res.csv')
+        res_data.to_csv('../../results/1_{}_fraction_retrain_res.csv'.format(self.shards))
 
 
 if __name__ == '__main__':
-    test_s_fraction = S_fraction(5, True, 50, 5)
+    test_s_fraction = S_fraction(10, True, 50, 5)
     test_s_fraction.unlearning()
-    res = pd.read_csv('../../results/S_fraction_retrain_res.csv')
+    res = pd.read_csv('../../results/1_{}_fraction_retrain_res.csv'.format(test_s_fraction.shards))
     accuracys = res['accuracys']
     unlearning_times = res['unlearning time']
 

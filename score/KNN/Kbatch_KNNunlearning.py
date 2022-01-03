@@ -9,7 +9,6 @@ import random
 class KNNbase_Unlearning():
 
     def __init__(self, shuffle=False, shards=1, remove_files_flag=True):
-        # self.user_total_num = 943
         if shards <= 0:
             print('shards number is invalid!')
             exit(0)
