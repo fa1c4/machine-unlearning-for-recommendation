@@ -3,6 +3,7 @@ import time
 import matplotlib.pyplot as plt
 from Kbatch_KNNunlearning import KNNbase_Unlearning
 from KnnPred import knnpred
+import os
 
 
 class Fullretrain():
@@ -33,6 +34,8 @@ class Fullretrain():
             acc_temp, _ = Pred.calculate_accuracy()
             accuracys.append(acc_temp)
 
+        last_file_path = "../../data/u-unlearning{}.csv".format(next_index)
+        os.remove(last_file_path)
         res = {'accuracys': accuracys, 'unlearning time': unlearning_times}
         res_data = pd.DataFrame(res)
         res_data.to_csv('../../results/fullretrain_res.csv')

@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     shuffle = True
     batchsize = 50
-    total_unlearning_num = 30
+    total_unlearning_num = 5
     unlearning_data_pointes = batchsize * total_unlearning_num
 
     # full retrain

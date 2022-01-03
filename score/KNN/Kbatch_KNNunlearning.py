@@ -19,18 +19,19 @@ class KNNbase_Unlearning():
         self.alg, self.user_ids = None, None
         self.shuffle, self.shards = shuffle, shards
         self.remove_files_flag, self.original_flag = remove_files_flag, True
+        self.file_path = None
 
     def data_readin(self, path_to_udata):
-        file_path = os.path.expanduser(path_to_udata)
+        self.file_path = os.path.expanduser(path_to_udata)
         # print(file_path)
         # 使用Reader指定文本格式，参数line_format指定特征（列名），参数sep指定分隔符
         self.reader = Reader(line_format='user item rating timestamp', sep='\t')
         # 加载数据集
-        self.data = Dataset.load_from_file(file_path, reader=self.reader)
-        self.data_df = pd.read_csv(file_path, sep='\t', header=None, names=['user', 'item', 'rating', 'timestamp'])
+        self.data = Dataset.load_from_file(self.file_path, reader=self.reader)
+        self.data_df = pd.read_csv(self.file_path, sep='\t', header=None, names=['user', 'item', 'rating', 'timestamp'])
 
         if self.remove_files_flag and self.original_flag == False:
-            os.remove(file_path)
+            os.remove(self.file_path)
         self.original_flag = False
 
         # sorted data dataframe as user id and timestamp
@@ -156,17 +157,12 @@ class KNNbase_Unlearning():
         for _ in range(batchsize):
             uid = random.choice(self.user_ids).item()
             uids.append(uid)
-        # print("----- select user uids -----")
-        # print(uids)
 
         history_index = []
         for _ in range(batchsize):
             data_user = self.getting_user_history(uids[_])
             indexarr = data_user.index.values
             history_index_temp = random.choice(indexarr).item()
-            # dest = data_user.loc[history_index_temp]
-            # movie_name = dest["item"]
-            # movie_index = self.movie_name_to_item(movie_name)
             history_index.append(history_index_temp)
 
         self.unlearning_request(history_index)

@@ -3,6 +3,7 @@ import time
 import matplotlib.pyplot as plt
 from Kbatch_KNNunlearning import KNNbase_Unlearning
 from KnnPred import knnpred
+import os
 
 
 class S_fraction():
@@ -37,13 +38,15 @@ class S_fraction():
             accuracys.append(acc_temp)
             print('accuracy: {}'.format(acc_temp))
 
+        last_file_path = os.path.expanduser('../../data/shards_{}_{}/u-unlearning{}.csv'.format(self.shards, self.shuffled_ordered_str, next_index))
+        os.remove(last_file_path)
         res = {'accuracys': accuracys, 'unlearning time': unlearning_times}
         res_data = pd.DataFrame(res)
         res_data.to_csv('../../results/1_{}_fraction_retrain_res.csv'.format(self.shards))
 
 
 if __name__ == '__main__':
-    test_s_fraction = S_fraction(10, True, 50, 5)
+    test_s_fraction = S_fraction(10, True, 50, 3)
     test_s_fraction.unlearning()
     res = pd.read_csv('../../results/1_{}_fraction_retrain_res.csv'.format(test_s_fraction.shards))
     accuracys = res['accuracys']

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from bagging_KNNunlearning import KNNbase_Unlearning
 from KnnPred import knnpred
 import random
-
+import os
 
 class Knnbagging():
 
@@ -50,6 +50,7 @@ class Knnbagging():
             models[s].data_readin('../../data/shards_{}_{}/dataset_sharded{}.csv'.format(self.shards, self.shuffled_ordered_str, s))
             models[s].data_df.to_csv("../../data/shards_{}_{}/shard{}-unlearning0.csv".format(self.shards, self.shuffled_ordered_str, s),
                                    sep="\t", header=None, index=False)
+
         accuracys, unlearning_times, next_indexs = [], [], []
         time_start = time.time()
         for s in range(self.shards):
@@ -68,6 +69,10 @@ class Knnbagging():
             accuracys.append(acc_temp)
             print('shards {}\'s accuracy: {}'.format(self.shards, acc_temp))
             bagging_time += time.time() - bagging_start
+
+        for s in range(self.shards):
+            last_file_path = os.path.expanduser("../../data/shards_{}_{}/shard{}-unlearning{}.csv".format(self.shards, self.shuffled_ordered_str, s, next_indexs[s]))
+            os.remove(last_file_path)
 
         res = {'accuracys': accuracys, 'unlearning time': unlearning_times}
         res_data = pd.DataFrame(res)
@@ -103,7 +108,7 @@ class Knnbagging():
 
 
 if __name__ == '__main__':
-    test_knnbagging = Knnbagging(10, True, 50, 5)
+    test_knnbagging = Knnbagging(10, True, 50, 3)
     test_knnbagging.unlearning()
     res = pd.read_csv('../../results/shards{}_unlearning_res.csv'.format(test_knnbagging.shards))
     accuracys = res['accuracys']
