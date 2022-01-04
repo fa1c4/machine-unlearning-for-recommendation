@@ -85,30 +85,46 @@ if __name__ == '__main__':
     # shuffled
     shuffle = True
     shuffled_acc = []
-    for s in range(2, 18, 2):
-        test_knnbagging = Knnbagging(s, shuffle, 50, 1)
-        test_knnbagging.unlearning()
-        res = pd.read_csv('../../results/shards{}_unlearning_res.csv'.format(test_knnbagging.shards))
-        accuracys = res['accuracys']
-        shuffled_acc.append(accuracys[0])
+    shards = 5
+    test_knnbagging = Knnbagging(shards, shuffle, 50, 10)
+    test_knnbagging.unlearning()
+    res = pd.read_csv('../../results/shards{}_unlearning_res.csv'.format(test_knnbagging.shards))
+    accuracys = res['accuracys']
+    # shuffled_acc.append(accuracys[0])
 
-    # ordered
-    shuffle = False
-    ordered_acc = []
-    for s in range(2, 18, 2):
-        test_knnbagging = Knnbagging(s, shuffle, 50, 1)
-        test_knnbagging.unlearning()
-        res = pd.read_csv('../../results/shards{}_unlearning_res.csv'.format(test_knnbagging.shards))
-        accuracys = res['accuracys']
-        ordered_acc.append(accuracys[0])
-
-
-    x = range(2, 18, 2)
-    plt.plot(x, shuffled_acc, label='shuffled', linewidth=1, color='y', marker='o')
-    plt.plot(x, ordered_acc, label='ordered', linewidth=1, color='g', marker='x')
-    plt.xlabel('shards')
+    x = range(0, 500, 50)
+    # plt.plot(x, shuffled_acc, label='shuffled', linewidth=1, color='y', marker='o')
+    plt.plot(x, accuracys, label='acc', linewidth=1, color='g', marker='o')
+    plt.xlabel('unlearning datapoints number')
     plt.ylabel('accuracy')
-    plt.title('accuracy of dataset ordered/shuffled unlearning')
+    plt.title('accuracy of 5 shards unlearning')
     plt.legend()
     plt.show()
+
+    # for s in range(2, 18, 2):
+    #     test_knnbagging = Knnbagging(s, shuffle, 50, 1)
+    #     test_knnbagging.unlearning()
+    #     res = pd.read_csv('../../results/shards{}_unlearning_res.csv'.format(test_knnbagging.shards))
+    #     accuracys = res['accuracys']
+    #     shuffled_acc.append(accuracys[0])
+    #
+    # # ordered
+    # shuffle = False
+    # ordered_acc = []
+    # for s in range(2, 18, 2):
+    #     test_knnbagging = Knnbagging(s, shuffle, 50, 1)
+    #     test_knnbagging.unlearning()
+    #     res = pd.read_csv('../../results/shards{}_unlearning_res.csv'.format(test_knnbagging.shards))
+    #     accuracys = res['accuracys']
+    #     ordered_acc.append(accuracys[0])
+    #
+    #
+    # x = range(2, 18, 2)
+    # plt.plot(x, shuffled_acc, label='shuffled', linewidth=1, color='y', marker='o')
+    # plt.plot(x, ordered_acc, label='ordered', linewidth=1, color='g', marker='x')
+    # plt.xlabel('shards')
+    # plt.ylabel('accuracy')
+    # plt.title('accuracy of dataset ordered/shuffled unlearning')
+    # plt.legend()
+    # plt.show()
 
